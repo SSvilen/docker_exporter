@@ -68,6 +68,7 @@ namespace DockerExporter
             using var probeDurationTimer = DockerTrackerMetrics.ProbeDuration.NewTimer();
 
             IList<ContainerListResponse> allContainers;
+            SystemInfoResponse systemInfoResponse = new();
 
             try
             {
@@ -77,6 +78,8 @@ namespace DockerExporter
                 {
                     All = true
                 }, cts.Token);
+
+                systemInfoResponse = await _client.System.GetSystemInfoAsync(cts.Token);
             }
             catch (Exception ex)
             {
@@ -95,7 +98,7 @@ namespace DockerExporter
             }
 
             DockerTrackerMetrics.ContainerCount.Set(allContainers.Count);
-            SynchronizeTrackerSet(allContainers);
+            SynchronizeTrackerSet(allContainers, systemInfoResponse);
 
             // Update each tracker. We do them in parallel to minimize the total time span spent on probing.
             var updateTasks = new List<Task>();
@@ -120,7 +123,7 @@ namespace DockerExporter
         /// Ensures that we have a tracker for every listed container
         /// and removes trackers for any containers not in the list.
         /// </summary>
-        private void SynchronizeTrackerSet(IList<ContainerListResponse> allContainers)
+        private void SynchronizeTrackerSet(IList<ContainerListResponse> allContainers, SystemInfoResponse systemInfoResponse)
         {
             var containerIds = allContainers.Select(c => c.ID).ToArray();
             var trackedIds = _containerTrackers.Keys.ToArray();
@@ -130,9 +133,10 @@ namespace DockerExporter
             foreach (var id in newIds)
             {
                 var displayName = GetDisplayName(allContainers.Single(c => c.ID == id));
+                var hostName = systemInfoResponse.Name;
                 _log.Debug($"Encountered container for the first time: {displayName} ({id}).");
 
-                _containerTrackers[id] = new ContainerTracker(id, displayName);
+                _containerTrackers[id] = new ContainerTracker(id, displayName, hostName);
             }
 
             // Remove the trackers of any removed containers.
@@ -148,6 +152,7 @@ namespace DockerExporter
             }
         }
 
+       
         /// <summary>
         /// If the container has a name assigned, it is used.
         /// Otherwise, the first 12 characters of the ID are used.

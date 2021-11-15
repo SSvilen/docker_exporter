@@ -21,13 +21,16 @@ namespace DockerExporter
     {
         public string Id { get; }
         public string DisplayName { get; }
+        public string HostName { get; }
 
-        public ContainerTracker(string id, string displayName)
+
+        public ContainerTracker(string id, string displayName, string hostName)
         {
             Id = id;
             DisplayName = displayName;
+            HostName = hostName;
 
-            _metrics = new ContainerTrackerMetrics(displayName);
+            _metrics = new ContainerTrackerMetrics(displayName, HostName);
         }
 
         public void Dispose()
@@ -87,7 +90,7 @@ namespace DockerExporter
             if (_stateMetrics == null)
             {
                 _log.Debug($"First update of state metrics for {DisplayName} ({Id}).");
-                _stateMetrics = new ContainerTrackerStateMetrics(DisplayName);
+                _stateMetrics = new ContainerTrackerStateMetrics(DisplayName, HostName);
             }
 
             UpdateStateMetrics(_stateMetrics, container);
@@ -97,7 +100,7 @@ namespace DockerExporter
                 if (_resourceMetrics == null)
                 {
                     _log.Debug($"Initializing resource metrics for {DisplayName} ({Id}).");
-                    _resourceMetrics = new ContainerTrackerResourceMetrics(DisplayName);
+                    _resourceMetrics = new ContainerTrackerResourceMetrics(DisplayName, HostName);
                 }
 
                 UpdateResourceMetrics(_resourceMetrics, container, resourceStatsRecorder.Response);

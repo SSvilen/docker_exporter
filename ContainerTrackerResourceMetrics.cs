@@ -14,15 +14,15 @@ namespace DockerExporter
         public Gauge.Child TotalDiskBytesRead { get; private set; }
         public Gauge.Child TotalDiskBytesWrite { get; private set; }
 
-        public ContainerTrackerResourceMetrics(string displayName)
+        public ContainerTrackerResourceMetrics(string displayName, string hostName)
         {
-            CpuUsage = BaseCpuUsage.WithLabels(displayName);
-            CpuCapacity = BaseCpuCapacity.WithLabels(displayName);
-            MemoryUsage = BaseMemoryUsage.WithLabels(displayName);
-            TotalNetworkBytesIn = BaseTotalNetworkBytesIn.WithLabels(displayName);
-            TotalNetworkBytesOut = BaseTotalNetworkBytesOut.WithLabels(displayName);
-            TotalDiskBytesRead = BaseTotalDiskBytesRead.WithLabels(displayName);
-            TotalDiskBytesWrite = BaseTotalDiskBytesWrite.WithLabels(displayName);
+            CpuUsage = BaseCpuUsage.WithLabels(displayName, hostName);
+            CpuCapacity = BaseCpuCapacity.WithLabels(displayName, hostName);
+            MemoryUsage = BaseMemoryUsage.WithLabels(displayName, hostName);
+            TotalNetworkBytesIn = BaseTotalNetworkBytesIn.WithLabels(displayName, hostName);
+            TotalNetworkBytesOut = BaseTotalNetworkBytesOut.WithLabels(displayName, hostName);
+            TotalDiskBytesRead = BaseTotalDiskBytesRead.WithLabels(displayName, hostName);
+            TotalDiskBytesWrite = BaseTotalDiskBytesWrite.WithLabels(displayName, hostName);
         }
 
         public void Dispose()
@@ -72,7 +72,7 @@ namespace DockerExporter
 
         private static GaugeConfiguration ConfigureGauge() => new GaugeConfiguration
         {
-            LabelNames = new[] { "name" },
+            LabelNames = new[] { "name" , "dockerhost"},
             SuppressInitialValue = true
         };
     }

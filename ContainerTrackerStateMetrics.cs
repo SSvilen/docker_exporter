@@ -9,11 +9,11 @@ namespace DockerExporter
         public Gauge.Child RunningState { get; private set; }
         public Gauge.Child StartTime { get; private set; }
 
-        public ContainerTrackerStateMetrics(string displayName)
+        public ContainerTrackerStateMetrics(string displayName, string hostName)
         {
-            RestartCount = BaseRestartCount.WithLabels(displayName);
-            RunningState = BaseRunningState.WithLabels(displayName);
-            StartTime = BaseStartTime.WithLabels(displayName);
+            RestartCount = BaseRestartCount.WithLabels(displayName, hostName);
+            RunningState = BaseRunningState.WithLabels(displayName, hostName);
+            StartTime = BaseStartTime.WithLabels(displayName, hostName);
         }
 
         public void Dispose()
@@ -41,7 +41,7 @@ namespace DockerExporter
 
         private static GaugeConfiguration ConfigureGauge() => new GaugeConfiguration
         {
-            LabelNames = new[] { "name" },
+            LabelNames = new[] { "name" , "dockerhost"},
             SuppressInitialValue = true
         };
     }
